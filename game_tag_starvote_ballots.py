@@ -110,7 +110,7 @@ def main():
     parser.add_argument(
         "--target_metric_column",
         type=str,
-        default="All-Time High CCU",
+        default="Review Count",
         help="Column name for the target metric.",
     )
     parser.add_argument(
