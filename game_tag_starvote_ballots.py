@@ -3,7 +3,11 @@ import csv
 import ast
 import random
 import math
+import logging
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def normalize_score(target_metric, min_metric, max_metric):
     if target_metric > 0:
@@ -73,21 +77,22 @@ def print_summary(
     min_metric,
     max_metric,
 ):
-    print(f"CSV file path: {csv_file_path}")
-    print(f"Target metric column: {target_metric_column}")
-    print(f"Number of candidates: {candidates}")
-    print(f"Total entries: {len(ballots)}")
-    print(f"Total decode errors: {decode_errors}")
-    print(f"Min metric: {min_metric}")
-    print(f"Max metric: {max_metric}")
+    logger.debug(f"CSV file path: {csv_file_path}")
+    logger.debug(f"Target metric column: {target_metric_column}")
+    logger.debug(f"Number of candidates: {candidates}")
+    logger.debug(f"Total entries: {len(ballots)}")
+    logger.debug(f"Total decode errors: {decode_errors}")
+    logger.debug(f"Min metric: {min_metric}")
+    logger.debug(f"Max metric: {max_metric}")
+
 
 
 def print_random_ballots(ballots, seed, count=5):
     random.seed(seed)
     random_ballots = random.sample(ballots, min(count, len(ballots)))
-    print("Randomly selected raw ballots:")
+    logger.debug("Randomly selected ballots:")
     for ballot in random_ballots:
-        print(ballot)
+        logger.debug(ballot)
     return random_ballots
 
 
@@ -114,7 +119,7 @@ def main():
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
     print_random_ballots(normalized_ballots, seed)
     results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
-    print(results)
+    logger.info(results)
 
 
 if __name__ == "__main__":
