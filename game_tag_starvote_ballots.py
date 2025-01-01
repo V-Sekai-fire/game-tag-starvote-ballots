@@ -4,6 +4,25 @@ import ast
 import random
 import math
 
+
+def normalize_score(target_metric, min_metric, max_metric):
+    if target_metric > 0:
+        log_target_metric = math.log(target_metric)
+    else:
+        log_target_metric = 0
+
+    min_log = math.log(min_metric) if min_metric > 0 else 0
+    max_log = math.log(max_metric) if max_metric > 0 else 0
+
+    if max_log == min_log:
+        normalized_log = 0
+    else:
+        normalized_log = (log_target_metric - min_log) / (max_log - min_log)
+
+    target_metric = 1 + normalized_log * (5 - 1)
+    return min(round(target_metric), 5)
+
+
 def process_csv_file(csv_file_path, target_metric_column, candidates):
     ballots = []
     decode_errors = 0
@@ -25,21 +44,8 @@ def process_csv_file(csv_file_path, target_metric_column, candidates):
                     target_metric = 0
                 else:
                     target_metric = float(target_metric_str)
-                # print(f"Debug: target_metric = {target_metric}")
-                
-                if target_metric > 0:
-                    log_target_metric = math.log(target_metric)
-                else:
-                    log_target_metric = 0
 
-                min_log = 0
-                max_log = math.log(1000)
-                normalized_log = (log_target_metric - min_log) / (max_log - min_log)
-
-                target_metric = 1 + normalized_log * (5 - 1)
-                target_metric = min(round(target_metric), 5)
-
-                # print(f"Debug: log-normalized and scaled target_metric = {target_metric}")
+                target_metric = normalize_score(target_metric, 1, 1000)
             except (ValueError, SyntaxError):
                 decode_errors += 1
                 continue
@@ -47,6 +53,7 @@ def process_csv_file(csv_file_path, target_metric_column, candidates):
             ballots.append(ballot)
 
     return ballots, decode_errors
+
 
 def main():
     csv_file_path = "Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv"
@@ -71,6 +78,7 @@ def main():
 
     results = starvote.allocated_score_voting(ballots, seats=candidates)
     print(results)
+
 
 if __name__ == "__main__":
     main()

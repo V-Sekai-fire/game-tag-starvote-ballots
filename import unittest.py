@@ -7,6 +7,27 @@ TARGET_METRIC_COLUMN = "Current CCU"
 
 
 class TestNormalizeScore(unittest.TestCase):
+    def test_normalize_score(self):
+        # Normal cases
+        self.assertEqual(normalize_score(100, 100, 400), 1)
+        self.assertEqual(normalize_score(200, 100, 400), 3)
+        self.assertEqual(normalize_score(300, 100, 400), 4)
+        self.assertEqual(normalize_score(400, 100, 400), 5)
+        self.assertEqual(normalize_score(250, 100, 400), 4)
+
+        # Corner cases
+        self.assertEqual(normalize_score(100, 100, 100), 1)
+        self.assertEqual(normalize_score(400, 400, 400), 1)
+        self.assertEqual(normalize_score(0, 0, 100), 1)
+        self.assertEqual(normalize_score(100, 0, 100), 5)
+        self.assertEqual(normalize_score(50, 0, 100), 4)
+
+        # Edge cases
+        self.assertEqual(normalize_score(-100, -200, 0), 1)
+        self.assertEqual(normalize_score(0, -100, 100), 1)
+        self.assertEqual(normalize_score(100, 100, 400), 1)
+        self.assertEqual(normalize_score(400, 100, 400), 5)
+
     def test_election(self):
         """
         Tests the election process using simplified mock data and the STAR voting method.
