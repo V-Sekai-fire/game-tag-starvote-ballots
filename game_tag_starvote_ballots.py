@@ -54,8 +54,8 @@ def process_csv_file(csv_file_path, target_metric_column, candidates):
 
 def main():
     csv_file_path = 'Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv'
-    target_metric_column = "Current CCU"
-    candidates = 7
+    target_metric_column = "Gross Revenue (LTD)"
+    candidates = 5
 
     print(f"CSV file path: {csv_file_path}")
     print(f"Target metric column: {target_metric_column}")
