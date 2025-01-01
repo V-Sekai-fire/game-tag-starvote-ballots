@@ -20,13 +20,15 @@ def normalize_score(target_metric, min_metric, max_metric):
         normalized_log = (log_target_metric - min_log) / (max_log - min_log)
 
     target_metric = 1 + normalized_log * (5 - 1)
-    return min(round(target_metric), 5)
+    return max(1, min(round(target_metric), 5))
 
 
 def process_csv_file(csv_file_path, target_metric_column):
     ballots = []
     decode_errors = 0
     first_five_rows = []
+    min_metric = float("inf")
+    max_metric = float("-inf")
 
     with open(csv_file_path, newline="", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -43,43 +45,77 @@ def process_csv_file(csv_file_path, target_metric_column):
                     target_metric = 0
                 else:
                     target_metric = float(target_metric_str)
+                    if target_metric > 0:
+                        min_metric = min(min_metric, target_metric)
+                        max_metric = max(max_metric, target_metric)
             except (ValueError, SyntaxError):
                 decode_errors += 1
                 continue
             ballot = {tag: target_metric for tag in tags}
             ballots.append(ballot)
 
-    return ballots, decode_errors, first_five_rows
+    return ballots, decode_errors, first_five_rows, min_metric, max_metric
+
+
+def normalize_ballots(ballots, min_metric, max_metric):
+    for ballot in ballots:
+        for tag in ballot:
+            ballot[tag] = normalize_score(ballot[tag], min_metric, max_metric)
+    return ballots
+
+
+def print_summary(
+    csv_file_path,
+    target_metric_column,
+    candidates,
+    ballots,
+    decode_errors,
+    min_metric,
+    max_metric,
+):
+    print(f"CSV file path: {csv_file_path}")
+    print(f"Target metric column: {target_metric_column}")
+    print(f"Number of candidates: {candidates}")
+    print(f"Total entries: {len(ballots)}")
+    print(f"Total decode errors: {decode_errors}")
+    print(f"Min metric: {min_metric}")
+    print(f"Max metric: {max_metric}")
+
+
+def print_random_ballots(ballots, seed, count=5):
+    random.seed(seed)
+    random_ballots = random.sample(ballots, min(count, len(ballots)))
+    print("Randomly selected raw ballots:")
+    for ballot in random_ballots:
+        print(ballot)
+    return random_ballots
 
 
 def main():
     csv_file_path = "Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv"
     target_metric_column = "Gross Revenue (LTD)"
     candidates = 5
-    seed = 42  # Set a seed for deterministic shuffling
+    seed = 42
 
-    print(f"CSV file path: {csv_file_path}")
-    print(f"Target metric column: {target_metric_column}")
-    print(f"Number of candidates: {candidates}")
-
-    ballots, decode_errors, first_five_rows = process_csv_file(
+    ballots, decode_errors, first_five_rows, min_metric, max_metric = process_csv_file(
         csv_file_path, target_metric_column
     )
 
-    print(f"Total entries: {len(ballots)}")
-    print(f"Total decode errors: {decode_errors}")
-    print("Randomly selected raw ballots:")
-    random.seed(seed)
-    random_ballots = random.sample(ballots, min(5, len(ballots)))
+    print_summary(
+        csv_file_path,
+        target_metric_column,
+        candidates,
+        ballots,
+        decode_errors,
+        min_metric,
+        max_metric,
+    )
+    random_ballots = print_random_ballots(ballots, seed)
+    normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
+    print("Randomly selected normalized ballots:")
     for ballot in random_ballots:
         print(ballot)
-    min_metric = 1
-    max_metric = 1000
-    for ballot in ballots:
-        for tag in ballot:
-            ballot[tag] = normalize_score(ballot[tag], min_metric, max_metric)
-
-    results = starvote.allocated_score_voting(ballots, seats=candidates)
+    results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
     print(results)
 
 
