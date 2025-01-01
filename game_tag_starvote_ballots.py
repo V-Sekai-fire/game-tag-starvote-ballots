@@ -6,7 +6,7 @@ import math
 import logging
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def normalize_score(target_metric, min_metric, max_metric):
@@ -62,9 +62,13 @@ def process_csv_file(csv_file_path, target_metric_column):
 
 
 def normalize_ballots(ballots, min_metric, max_metric):
+    logger.debug("Normalizing ballots with min_metric: %s and max_metric: %s", min_metric, max_metric)
     for ballot in ballots:
         for tag in ballot:
-            ballot[tag] = normalize_score(ballot[tag], min_metric, max_metric)
+            original_score = ballot[tag]
+            normalized_score = normalize_score(original_score, min_metric, max_metric)
+            logger.debug("Original score: %s, Normalized score: %s for tag: %s", original_score, normalized_score, tag)
+            ballot[tag] = normalized_score
     return ballots
 
 
@@ -77,10 +81,10 @@ def print_summary(
     min_metric,
     max_metric,
 ):
-    logger.debug(f"CSV file path: {csv_file_path}")
-    logger.debug(f"Target metric column: {target_metric_column}")
+    logger.info(f"CSV file path: {csv_file_path}")
+    logger.info(f"Target metric column: {target_metric_column}")
     logger.debug(f"Number of candidates: {candidates}")
-    logger.debug(f"Total entries: {len(ballots)}")
+    logger.info(f"Total entries: {len(ballots)}")
     logger.debug(f"Total decode errors: {decode_errors}")
     logger.debug(f"Min metric: {min_metric}")
     logger.debug(f"Max metric: {max_metric}")
