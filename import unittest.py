@@ -85,6 +85,62 @@ class TestNormalizeScore(unittest.TestCase):
         self.assertNotIn("Strategy", results, "Strategy should not be in the results")
         self.assertEqual(len(results), 2, "There should be exactly 2 results")
 
+    def test_election_edge_cases(self):
+        """
+        Tests the election process with edge cases.
+        """
+        edge_case_data = [
+            {
+                "title": "Game D",
+                "play_time": 0,
+                "genres": ["Action"],
+            },
+            {
+                "title": "Game E",
+                "play_time": -100,
+                "genres": ["Adventure"],
+            },
+            {
+                "title": "Game F",
+                "play_time": 1000000,
+                "genres": ["Puzzle"],
+            },
+        ]
+
+        def mock_csv_reader(mock_data):
+            for row in mock_data:
+                yield row
+
+        reader = mock_csv_reader(edge_case_data)
+        gross_revenues = [int(row[TARGET_METRIC_COLUMN]) for row in reader]
+        min_revenue = min(gross_revenues)
+        max_revenue = max(gross_revenues)
+
+        ballots = []
+        for row in edge_case_data:
+            tags = row["genres"]
+            target_metric = int(row[TARGET_METRIC_COLUMN])
+            normalized_score = normalize_score(target_metric, min_revenue, max_revenue)
+            ballot = {tag: normalized_score for tag in tags}
+            ballots.append(ballot)
+
+        # Assert that no ballot has a value of 0
+        for ballot in ballots:
+            for score in ballot.values():
+                self.assertNotEqual(score, 0, "Ballot should not have a score of 0")
+
+        results = starvote.allocated_score_voting(ballots, seats=2)
+        expected_results = ['Action', 'Puzzle']
+
+        self.assertEqual(
+            results, expected_results, f"Election results should be {expected_results}"
+        )
+
+        self.assertIn("Puzzle", results, "Puzzle should be in the results")
+        self.assertIn("Action", results, "Action should be in the results")
+        self.assertNotIn("Adventure", results, "Adventure should not be in the results")
+        self.assertEqual(len(results), 2, "There should be exactly 2 results")
+
 
 if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner())
