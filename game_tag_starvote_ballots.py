@@ -3,6 +3,7 @@ import csv
 import ast
 import math
 import logging
+import argparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -99,26 +100,43 @@ def print_summary(
 
 
 def main():
-    csv_file_path = "Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv"
-    # steamLink,header,Name,Copies Sold (LTD),Gross Revenue (LTD),Steam Followers,Current CCU,Today's Top CCU,All-Time High CCU,Review Count,Review Score,Release Date,Tags
-    target_metric_column = "All-Time High CCU"
-    candidates = 5
+    parser = argparse.ArgumentParser(description="Process and normalize CSV ballots.")
+    parser.add_argument(
+        "--csv_file_path",
+        type=str,
+        default="Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv",
+        help="Path to the CSV file.",
+    )
+    parser.add_argument(
+        "--target_metric_column",
+        type=str,
+        default="All-Time High CCU",
+        help="Column name for the target metric.",
+    )
+    parser.add_argument(
+        "--candidates",
+        type=int,
+        default=5,
+        help="Number of candidates.",
+    )
+
+    args = parser.parse_args()
 
     ballots, decode_errors, first_five_rows, min_metric, max_metric = process_csv_file(
-        csv_file_path, target_metric_column
+        args.csv_file_path, args.target_metric_column
     )
 
     print_summary(
-        csv_file_path,
-        target_metric_column,
-        candidates,
+        args.csv_file_path,
+        args.target_metric_column,
+        args.candidates,
         ballots,
         decode_errors,
         min_metric,
         max_metric,
     )
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
-    results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
+    results = starvote.allocated_score_voting(normalized_ballots, seats=args.candidates)
     logger.info(f"The list has the best rank at the end: {results[-1]}")
     logger.info(results)
 
