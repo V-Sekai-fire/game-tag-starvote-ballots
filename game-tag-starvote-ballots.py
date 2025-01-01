@@ -110,4 +110,4 @@ print(f"Total decode errors: {decode_errors}")
 results = starvote.allocated_score_voting(ballots, seats=CANDIDATES)
 print(results)
 
-unittest.main()
+# unittest.main()
