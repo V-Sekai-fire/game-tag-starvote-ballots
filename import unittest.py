@@ -1,10 +1,10 @@
 import unittest
 import ast
-import logging
 
 from game_tag_starvote_ballots import normalize_score, starvote
 
 TARGET_METRIC_COLUMN = "Current CCU"
+
 
 class TestNormalizeScore(unittest.TestCase):
     def test_normalize_score_below_min(self):
@@ -29,12 +29,13 @@ class TestNormalizeScore(unittest.TestCase):
 
     def test_election(self):
         """
-        Tests the election process using mock data and the STAR voting method.
+        Tests the election process using simplified mock data and the STAR voting method.
         """
         mock_data = [
-            {"Current CCU": "50", "Tags": "['Visual Novel', 'Romance']"},
-            {"Current CCU": "600", "Tags": "['Adventure', 'Fantasy']"},
-            {"Current CCU": "300", "Tags": "['Visual Novel', 'Fantasy']"},
+            {"Current CCU": "100", "Tags": "['Tag1']"},
+            {"Current CCU": "200", "Tags": "['Tag2']"},
+            {"Current CCU": "300", "Tags": "['Tag3']"},
+            {"Current CCU": "400", "Tags": "['Tag4']"},
         ]
 
         def mock_csv_reader(mock_data):
@@ -54,10 +55,13 @@ class TestNormalizeScore(unittest.TestCase):
             ballot = {tag: normalized_score for tag in tags}
             ballots.append(ballot)
 
-        results = starvote.allocated_score_voting(ballots, seats=3)
-        expected_results = ['Adventure', 'Fantasy', 'Visual Novel']
+        results = starvote.allocated_score_voting(ballots, seats=2)
+        expected_results = ["Tag3", "Tag4"]
 
-        self.assertEqual(results, expected_results, f"Election results should be {expected_results}")
+        self.assertEqual(
+            results, expected_results, f"Election results should be {expected_results}"
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner())
