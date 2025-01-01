@@ -34,112 +34,19 @@ class TestNormalizeScore(unittest.TestCase):
         """
         mock_data = [
             {
-                "url": "https://store.steampowered.com/app/668630",
-                "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/668630/header.jpg?t=1733659759",
-                "title": "Tricolour Lovestory",
-                "app_id": 1200600,
-                "steam_id": 925000,
-                "play_time": 52524,
-                "reviews": 11,
-                "recent_reviews": 62,
-                "total_reviews": 2733,
-                "helpful_reviews": 25831,
-                "review_score": "82%",
-                "release_date": "2017-09-20",
-                "genres": [
-                    "Visual Novel",
-                    "Dating Sim",
-                    "Mature",
-                    "Sexual Content",
-                    "Nudity",
-                    "Anime",
-                    "Simulation",
-                    "Casual",
-                    "NSFW",
-                    "Great Soundtrack",
-                    "Romance",
-                    "Story Rich",
-                    "Indie",
-                    "Soundtrack",
-                    "Singleplayer",
-                    "Drama",
-                    "Cute",
-                    "Adventure",
-                    "Hentai",
-                    "FPS",
-                ],
+                "title": "Game A",
+                "play_time": 100,
+                "genres": ["Action", "Adventure"],
             },
             {
-                "url": "https://store.steampowered.com/app/250320",
-                "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/250320/header.jpg?t=1734104991",
-                "title": "The Wolf Among Us",
-                "app_id": 1157800,
-                "steam_id": 11167000,
-                "play_time": 44171,
-                "reviews": 272,
-                "recent_reviews": 272,
-                "total_reviews": 14321,
-                "helpful_reviews": 28107,
-                "review_score": "97%",
-                "release_date": "2013-10-11",
-                "genres": [
-                    "Adventure",
-                    "Detective",
-                    "Story Rich",
-                    "Episodic",
-                    "Choose Your Own Adventure",
-                    "Point & Click",
-                    "Noir",
-                    "Mature",
-                    "Choices Matter",
-                    "Visual Novel",
-                    "Singleplayer",
-                    "Atmospheric",
-                    "Comic Book",
-                    "Mystery",
-                    "Cinematic",
-                    "Action",
-                    "Dark",
-                    "Well-Written",
-                    "Fantasy",
-                    "Casual",
-                ],
+                "title": "Game B",
+                "play_time": 200,
+                "genres": ["Adventure", "Puzzle"],
             },
             {
-                "url": "https://store.steampowered.com/app/1126320",
-                "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1126320/header.jpg?t=1723920705",
-                "title": "Being a DIK - Season 1",
-                "app_id": 1154900,
-                "steam_id": 12545000,
-                "play_time": 53736,
-                "reviews": 337,
-                "recent_reviews": 341,
-                "total_reviews": 5709,
-                "helpful_reviews": 10799,
-                "review_score": "96%",
-                "release_date": "2020-02-13",
-                "genres": [
-                    "Sexual Content",
-                    "Nudity",
-                    "Mature",
-                    "NSFW",
-                    "Visual Novel",
-                    "Choices Matter",
-                    "Romance",
-                    "Story Rich",
-                    "Realistic",
-                    "Indie",
-                    "Multiple Endings",
-                    "Singleplayer",
-                    "Dating Sim",
-                    "Replay Value",
-                    "Episodic",
-                    "Violent",
-                    "Drama",
-                    "Funny",
-                    "Adventure",
-                    "Comedy",
-                ],
+                "title": "Game C",
+                "play_time": 300,
+                "genres": ["Puzzle", "Strategy"],
             },
         ]
 
@@ -166,18 +73,16 @@ class TestNormalizeScore(unittest.TestCase):
                 self.assertNotEqual(score, 0, "Ballot should not have a score of 0")
 
         results = starvote.allocated_score_voting(ballots, seats=2)
-        expected_results = ["Adventure", "Story Rich"]
+        expected_results = ["Adventure", "Puzzle"]
 
         self.assertEqual(
             results, expected_results, f"Election results should be {expected_results}"
         )
 
         self.assertIn("Adventure", results, "Adventure should be in the results")
-        self.assertIn("Story Rich", results, "Story Rich should be in the results")
-        self.assertNotIn(
-            "Sexual Content", results, "Sexual Content should not be in the results"
-        )
-        self.assertNotIn("Nudity", results, "Nudity should not be in the results")
+        self.assertIn("Puzzle", results, "Puzzle should be in the results")
+        self.assertNotIn("Action", results, "Action should not be in the results")
+        self.assertNotIn("Strategy", results, "Strategy should not be in the results")
         self.assertEqual(len(results), 2, "There should be exactly 2 results")
 
 
