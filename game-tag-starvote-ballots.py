@@ -1,3 +1,7 @@
+# Copyright (c) 2025-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# SPDX-License-Identifier: MIT
+
 import starvote
 import csv
 import ast
