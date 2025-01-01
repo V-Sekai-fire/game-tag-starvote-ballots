@@ -7,26 +7,6 @@ TARGET_METRIC_COLUMN = "Current CCU"
 
 
 class TestNormalizeScore(unittest.TestCase):
-    def test_normalize_score_below_min(self):
-        result = normalize_score(50, 100, 500)
-        self.assertEqual(result, 0, "Score below min should be normalized to 0")
-
-    def test_normalize_score_above_max(self):
-        result = normalize_score(600, 100, 500)
-        self.assertEqual(result, 5, "Score above max should be normalized to 5")
-
-    def test_normalize_score_within_range(self):
-        result = normalize_score(300, 100, 500)
-        self.assertEqual(result, 2, "Score within range should be normalized correctly")
-
-    def test_normalize_score_at_min(self):
-        result = normalize_score(100, 100, 500)
-        self.assertEqual(result, 0, "Score at min should be normalized to 0")
-
-    def test_normalize_score_at_max(self):
-        result = normalize_score(500, 100, 500)
-        self.assertEqual(result, 5, "Score at max should be normalized to 5")
-
     def test_election(self):
         """
         Tests the election process using simplified mock data and the STAR voting method.

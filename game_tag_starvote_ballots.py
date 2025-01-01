@@ -1,19 +1,7 @@
-# Copyright (c) 2025-present. This file is part of V-Sekai https://v-sekai.org/.
-# K. S. Ernest (Fire) Lee & Contributors
-# SPDX-License-Identifier: MIT
-
 import starvote
 import csv
 import ast
-
-
-def normalize_score(gross_revenue, min_revenue, max_revenue):
-    if gross_revenue <= min_revenue:
-        return 0
-    elif gross_revenue >= max_revenue:
-        return 5
-    else:
-        return round((gross_revenue - min_revenue) / (max_revenue - min_revenue) * 5)
+import random
 
 
 def process_csv_file(csv_file_path, target_metric_column, candidates):
@@ -24,16 +12,17 @@ def process_csv_file(csv_file_path, target_metric_column, candidates):
         reader = csv.DictReader(csvfile)
         gross_revenues = []
         for row in reader:
-            gross_revenue_str = row[target_metric_column]
-            if gross_revenue_str.lower() == "null":
-                gross_revenues.append(0)
-            else:
-                gross_revenue = int(gross_revenue_str)
-                gross_revenues.append(gross_revenue)
-
-        min_revenue = min(gross_revenues)
-        max_revenue = max(gross_revenues)
-
+            try:
+                target_metric_str = row[target_metric_column]
+                if target_metric_str.lower() == "null" or target_metric_str.strip() == "":
+                    gross_revenues.append(0)
+                else:
+                    target_metric = float(target_metric_str)
+                    gross_revenues.append(target_metric)
+            except ValueError:
+                decode_errors += 1
+                continue
+    
         csvfile.seek(0)
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -42,16 +31,7 @@ def process_csv_file(csv_file_path, target_metric_column, candidates):
             except (ValueError, SyntaxError):
                 decode_errors += 1
                 continue
-            gross_revenue_str = row[target_metric_column]
-            if gross_revenue_str.lower() == "null":
-                normalized_score = 0
-            else:
-                gross_revenue = int(gross_revenue_str)
-                normalized_score = normalize_score(
-                    gross_revenue, min_revenue, max_revenue
-                )
-
-            ballot = {tag: normalized_score for tag in tags}
+            ballot = {tag: 1 for tag in tags}
             ballots.append(ballot)
 
     return ballots, decode_errors
@@ -72,6 +52,12 @@ def main():
 
     print(f"Total entries: {len(ballots)}")
     print(f"Total decode errors: {decode_errors}")
+
+    # Pick 10 random ballots and print them
+    random_ballots = random.sample(ballots, min(10, len(ballots)))
+    print("Randomly selected ballots:")
+    for ballot in random_ballots:
+        print(ballot)
 
     results = starvote.allocated_score_voting(ballots, seats=candidates)
     print(results)
