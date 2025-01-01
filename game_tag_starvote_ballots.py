@@ -57,6 +57,10 @@ def main():
     target_metric_column = "Current CCU"
     candidates = 7
 
+    print(f"CSV file path: {csv_file_path}")
+    print(f"Target metric column: {target_metric_column}")
+    print(f"Number of candidates: {candidates}")
+
     ballots, decode_errors = process_csv_file(csv_file_path, target_metric_column, candidates)
 
     print(f"Total entries: {len(ballots)}")
