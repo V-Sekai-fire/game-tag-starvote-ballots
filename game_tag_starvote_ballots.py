@@ -123,7 +123,10 @@ def main():
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
     print_random_ballots(normalized_ballots, seed)
     results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
-    logger.info(results)
+    results_dict = {result: {'rank': len(results) - 1 - results.index(result)} for result in results}
+    results_sorted = dict(sorted(results_dict.items(), key=lambda item: item[1]['rank']))
+    
+    logger.info(results_sorted)
 
 
 if __name__ == "__main__":
