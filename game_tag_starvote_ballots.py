@@ -110,11 +110,9 @@ def main():
         min_metric,
         max_metric,
     )
-    random_ballots = print_random_ballots(ballots, seed)
+    print_random_ballots(ballots, seed)
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
-    print("Randomly selected normalized ballots:")
-    for ballot in random_ballots:
-        print(ballot)
+    print_random_ballots(normalized_ballots, seed)
     results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
     print(results)
 
