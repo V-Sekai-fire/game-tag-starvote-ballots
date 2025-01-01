@@ -130,7 +130,7 @@ class TestNormalizeScore(unittest.TestCase):
                 self.assertNotEqual(score, 0, "Ballot should not have a score of 0")
 
         results = starvote.allocated_score_voting(ballots, seats=2)
-        expected_results = ['Action', 'Puzzle']
+        expected_results = ["Action", "Puzzle"]
 
         self.assertEqual(
             results, expected_results, f"Election results should be {expected_results}"

@@ -1,13 +1,12 @@
 import starvote
 import csv
 import ast
-import random
 import math
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def normalize_score(target_metric, min_metric, max_metric):
     if target_metric > 0:
@@ -62,12 +61,21 @@ def process_csv_file(csv_file_path, target_metric_column):
 
 
 def normalize_ballots(ballots, min_metric, max_metric):
-    logger.debug("Normalizing ballots with min_metric: %s and max_metric: %s", min_metric, max_metric)
+    logger.debug(
+        "Normalizing ballots with min_metric: %s and max_metric: %s",
+        min_metric,
+        max_metric,
+    )
     for ballot in ballots:
         for tag in ballot:
             original_score = ballot[tag]
             normalized_score = normalize_score(original_score, min_metric, max_metric)
-            logger.debug("Original score: %s, Normalized score: %s for tag: %s", original_score, normalized_score, tag)
+            logger.debug(
+                "Original score: %s, Normalized score: %s for tag: %s",
+                original_score,
+                normalized_score,
+                tag,
+            )
             ballot[tag] = normalized_score
     return ballots
 
@@ -90,21 +98,11 @@ def print_summary(
     logger.debug(f"Max metric: {max_metric}")
 
 
-
-def print_random_ballots(ballots, seed, count=5):
-    random.seed(seed)
-    random_ballots = random.sample(ballots, min(count, len(ballots)))
-    logger.debug("Randomly selected ballots:")
-    for ballot in random_ballots:
-        logger.debug(ballot)
-    return random_ballots
-
-
 def main():
     csv_file_path = "Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv"
-    target_metric_column = "Gross Revenue (LTD)"
+    # steamLink,header,Name,Copies Sold (LTD),Gross Revenue (LTD),Steam Followers,Current CCU,Today's Top CCU,All-Time High CCU,Review Count,Review Score,Release Date,Tags
+    target_metric_column = "All-Time High CCU"
     candidates = 5
-    seed = 42
 
     ballots, decode_errors, first_five_rows, min_metric, max_metric = process_csv_file(
         csv_file_path, target_metric_column
@@ -119,14 +117,10 @@ def main():
         min_metric,
         max_metric,
     )
-    print_random_ballots(ballots, seed)
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
-    print_random_ballots(normalized_ballots, seed)
     results = starvote.allocated_score_voting(normalized_ballots, seats=candidates)
-    results_dict = {result: {'rank': len(results) - 1 - results.index(result)} for result in results}
-    results_sorted = dict(sorted(results_dict.items(), key=lambda item: item[1]['rank']))
-    
-    logger.info(results_sorted)
+    logger.info(f"The list has the best rank at the end: {results[-1]}")
+    logger.info(results)
 
 
 if __name__ == "__main__":
