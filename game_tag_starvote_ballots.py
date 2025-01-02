@@ -116,7 +116,7 @@ def main():
     parser.add_argument(
         "--candidates",
         type=int,
-        default=5,
+        default=100,
         help="Number of candidates.",
     )
 
@@ -137,7 +137,6 @@ def main():
     )
     normalized_ballots = normalize_ballots(ballots, min_metric, max_metric)
     results = starvote.allocated_score_voting(normalized_ballots, seats=args.candidates)
-    logger.info(f"The list has the best rank at the end: {results[-1]}")
     logger.info(results)
 
 
