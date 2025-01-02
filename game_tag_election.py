@@ -1,4 +1,5 @@
 import csv
+import ast
 import logging
 import argparse
 import starvote
@@ -7,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column, block_list):
+def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column):
     ballots = []
     maximum_score = 1
 
@@ -15,8 +16,7 @@ def process_csv_file(csv_file_path, name_column, target_metric_column, tags_colu
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
-                tags_str = row.get(tags_column, "[]")
-                tags = [tag.strip() for tag in tags_str.split(",") if tag.strip() and tag.strip() not in block_list]
+                tags = ast.literal_eval(row[tags_column])
                 target_metric_str = row[target_metric_column]
                 if (
                     target_metric_str.lower() == "null"
@@ -55,7 +55,7 @@ def main():
         "--target_metric_column",
         type=str,
         default="Gross Revenue (LTD)",
-        help="Column name for the target metric.",
+        help="Column name for the target metric. The target metric must be convertable to range from 1 to a large finite number.",
     )
     parser.add_argument(
         "--tags_column",
@@ -69,18 +69,11 @@ def main():
         default=3,
         help="Number of candidates.",
     )
-    parser.add_argument(
-        "--block_list",
-        type=str,
-        nargs="*",
-        default=["1girl", "school uniform", "small breasts", "cowboy shot"],
-        help="List of candidates to block.",
-    )
 
     args = parser.parse_args()
 
     ballots, maximum_score = process_csv_file(
-        args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column, args.block_list
+        args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column
     )
 
     results = starvote.election(
