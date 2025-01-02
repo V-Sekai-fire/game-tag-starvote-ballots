@@ -34,6 +34,7 @@ def process_csv_file(csv_file_path, target_metric_column):
                 decode_errors += 1
                 continue
             ballot = {tag: target_metric for tag in tags}
+            logger.debug(f"Ballot: {ballot}")
             ballots.append(ballot)
 
     maximum_score = int(maximum_score)
@@ -89,7 +90,7 @@ def main():
         ballots,
         decode_errors,
     )
-
+    
     results = starvote.election(
         method=starvote.STAR_Voting if args.candidates < 2 else starvote.Allocated_Score_Voting,
         ballots=ballots,
