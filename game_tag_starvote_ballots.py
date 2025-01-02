@@ -110,7 +110,7 @@ def main():
     parser.add_argument(
         "--target_metric_column",
         type=str,
-        default="Review Count",
+        default="Gross Revenue (LTD)",
         help="Column name for the target metric.",
     )
     parser.add_argument(
