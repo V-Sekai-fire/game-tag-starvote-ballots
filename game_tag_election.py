@@ -70,6 +70,13 @@ def main():
         default=3,
         help="Number of candidates.",
     )
+    parser.add_argument(
+        "--block_list",
+        type=str,
+        nargs="*",
+        default=["1girl", "school uniform", "small breasts", "cowboy shot"],
+        help="List of candidates to block.",
+    )
 
     args = parser.parse_args()
 
