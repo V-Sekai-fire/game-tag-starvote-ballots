@@ -116,7 +116,7 @@ def main():
     parser.add_argument(
         "--candidates",
         type=int,
-        default=100,
+        default=10,
         help="Number of candidates.",
     )
 
