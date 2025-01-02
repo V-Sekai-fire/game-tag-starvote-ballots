@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def process_csv_file(csv_file_path, name_column, target_metric_column):
+def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column):
     ballots = []
     maximum_score = 1
 
@@ -16,7 +16,7 @@ def process_csv_file(csv_file_path, name_column, target_metric_column):
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
-                tags = ast.literal_eval(row[name_column])
+                tags = ast.literal_eval(row[tags_column])
                 target_metric_str = row[target_metric_column]
                 if (
                     target_metric_str.lower() == "null"
@@ -48,14 +48,20 @@ def main():
     parser.add_argument(
         "--name_column",
         type=str,
-        default="Tags",
-        help="Column name for the tags.",
+        default="Name",
+        help="Column name for the names.",
     )
     parser.add_argument(
         "--target_metric_column",
         type=str,
         default="Gross Revenue (LTD)",
         help="Column name for the target metric.",
+    )
+    parser.add_argument(
+        "--tags_column",
+        type=str,
+        default="Tags",
+        help="Column name for the tags.",
     )
     parser.add_argument(
         "--candidates",
@@ -67,7 +73,7 @@ def main():
     args = parser.parse_args()
 
     ballots, maximum_score = process_csv_file(
-        args.csv_file_path, args.name_column, args.target_metric_column
+        args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column
     )
 
     results = starvote.election(
@@ -79,8 +85,7 @@ def main():
         tiebreaker=starvote.hashed_ballots_tiebreaker,
         maximum_score=maximum_score,
     )
-
-    logger.info(results)
+    print(results)
 
 
 if __name__ == "__main__":
