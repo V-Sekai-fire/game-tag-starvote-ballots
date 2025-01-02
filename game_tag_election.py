@@ -1,5 +1,4 @@
 import csv
-import ast
 import logging
 import argparse
 import starvote
@@ -8,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column):
+def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column, block_list):
     ballots = []
     maximum_score = 1
 
@@ -16,8 +15,8 @@ def process_csv_file(csv_file_path, name_column, target_metric_column, tags_colu
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
-                tags_str = row.get("Tags", "[]")
-                tags = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
+                tags_str = row.get(tags_column, "[]")
+                tags = [tag.strip() for tag in tags_str.split(",") if tag.strip() and tag.strip() not in block_list]
                 target_metric_str = row[target_metric_column]
                 if (
                     target_metric_str.lower() == "null"
@@ -81,7 +80,7 @@ def main():
     args = parser.parse_args()
 
     ballots, maximum_score = process_csv_file(
-        args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column
+        args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column, args.block_list
     )
 
     results = starvote.election(
