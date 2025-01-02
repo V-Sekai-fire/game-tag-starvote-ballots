@@ -16,7 +16,8 @@ def process_csv_file(csv_file_path, name_column, target_metric_column, tags_colu
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
-                tags = ast.literal_eval(row[tags_column])
+                tags_str = row.get("Tags", "[]")
+                tags = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
                 target_metric_str = row[target_metric_column]
                 if (
                     target_metric_str.lower() == "null"
@@ -55,7 +56,7 @@ def main():
         "--target_metric_column",
         type=str,
         default="Gross Revenue (LTD)",
-        help="Column name for the target metric. The target metric must be convertable to range from 1 to a large finite number.",
+        help="Column name for the target metric.",
     )
     parser.add_argument(
         "--tags_column",
