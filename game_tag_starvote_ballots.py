@@ -43,7 +43,7 @@ def main():
         "--csv_file_path",
         type=str,
         default="Visual Novel - Tag Explorer - GameDiscoverCo Plus.csv",
-        help="Path to the CSV file. The CSV should have a name column and a column for the target metric that can be converted to an integer from [1, Inf].",
+        help="Path to the CSV file.",
     )
     parser.add_argument(
         "--name_column",
@@ -55,7 +55,7 @@ def main():
         "--target_metric_column",
         type=str,
         default="Gross Revenue (LTD)",
-        help="Column name for the target metric.",
+        help="Column name for the target metric. The target metric must be convertable to range from 1 to a large finite number.",
     )
     parser.add_argument(
         "--tags_column",
