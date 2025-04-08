@@ -36,7 +36,7 @@ def process_csv_file(csv_file_path, name_column, target_metric_column, tags_colu
                 maximum_score = max(maximum_score, target_metric)
             except (ValueError, SyntaxError):
                 continue
-            # For election, use the game name as the candidate
+            # For election, use the game name as candidate
             cand_ballot = {game_name: target_metric}
             cand_ballots.append(cand_ballot)
             # For average table, use each tag with the same score
@@ -47,21 +47,6 @@ def process_csv_file(csv_file_path, name_column, target_metric_column, tags_colu
 
     maximum_score = int(maximum_score)
     return cand_ballots, tag_ballots, maximum_score, candidate_tags
-
-
-def generate_avg_table(ballots):
-    aggregated = defaultdict(list)
-    # Exclude keys that are not tags (in our tag ballots, all keys are tags)
-    all_keys = {key for ballot in ballots for key in ballot}
-    for ballot in ballots:
-        for key in all_keys:
-            value = ballot.get(key, 0)
-            aggregated[key].append(value)
-    averages = {key: round(sum(values) / len(values)) for key, values in aggregated.items()}
-    avg_df = pd.DataFrame(list(averages.items()), columns=["Tag", "Average Score"])
-    avg_df.sort_values(by="Average Score", ascending=False, inplace=True)
-    avg_df.reset_index(drop=True, inplace=True)
-    return avg_df
 
 
 def main():
@@ -93,13 +78,13 @@ def main():
     parser.add_argument(
         "--candidates",
         type=int,
-        default=15,
+        default=10,
         help="Number of candidates.",
     )
 
     args = parser.parse_args()
 
-    cand_ballots, tag_ballots, maximum_score, candidate_tags = process_csv_file(
+    cand_ballots, _tag_ballots, maximum_score, candidate_tags = process_csv_file(
         args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column
     )
 
@@ -111,21 +96,14 @@ def main():
         maximum_score=maximum_score,
     )
 
-    avg_table = generate_avg_table(tag_ballots)
-
-    print("Winners:")
+    print("Overall Winners:")
     for winner in winners:
         if isinstance(winner, dict):
-            # Each winner dict should have one key: the game name and its score.
             game = list(winner.keys())[0]
         else:
             game = winner
         tags = candidate_tags.get(game, ["N/A"])
         print(f"Winner Name: {game} | Tags: {', '.join(tags)}")
-
-    print("\nAveraged Votes Table:")
-    print(avg_table)
-
 
 if __name__ == "__main__":
     main()
