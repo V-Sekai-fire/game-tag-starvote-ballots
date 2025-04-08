@@ -2,6 +2,9 @@ import csv
 import ast
 import logging
 import argparse
+import json
+import pandas as pd
+from collections import defaultdict
 import starvote
 
 logging.basicConfig(level=logging.INFO)
@@ -9,32 +12,56 @@ logger = logging.getLogger(__name__)
 
 
 def process_csv_file(csv_file_path, name_column, target_metric_column, tags_column):
-    ballots = []
+    # ballots for election use the game name as candidate
+    cand_ballots = []
+    # ballots for average table use the tags (excluding game name)
+    tag_ballots = []
+    # mapping from candidate (game) to its tags (all tags from that row)
+    candidate_tags = {}
     maximum_score = 1
 
     with open(csv_file_path, newline="", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
-                tags = ast.literal_eval(row[tags_column])
+                # Process raw target metric value
                 target_metric_str = row[target_metric_column]
-                if (
-                    target_metric_str.lower() == "null"
-                    or target_metric_str.strip() == ""
-                ):
+                if target_metric_str.lower() == "null" or target_metric_str.strip() == "":
                     target_metric = 0
                 else:
                     target_metric = int(float(target_metric_str))
+                # Get game name and tags
+                game_name = row[name_column]
+                tags = ast.literal_eval(row[tags_column])
                 maximum_score = max(maximum_score, target_metric)
             except (ValueError, SyntaxError):
                 continue
-            ballot = {tag: target_metric for tag in tags}
-            logger.debug(f"Ballot: {ballot}")
-            ballots.append(ballot)
+            # For election, use the game name as the candidate
+            cand_ballot = {game_name: target_metric}
+            cand_ballots.append(cand_ballot)
+            # For average table, use each tag with the same score
+            tag_ballot = {tag: target_metric for tag in tags}
+            tag_ballots.append(tag_ballot)
+            # Store all tags for this candidate
+            candidate_tags[game_name] = tags
 
     maximum_score = int(maximum_score)
+    return cand_ballots, tag_ballots, maximum_score, candidate_tags
 
-    return ballots, maximum_score
+
+def generate_avg_table(ballots):
+    aggregated = defaultdict(list)
+    # Exclude keys that are not tags (in our tag ballots, all keys are tags)
+    all_keys = {key for ballot in ballots for key in ballot}
+    for ballot in ballots:
+        for key in all_keys:
+            value = ballot.get(key, 0)
+            aggregated[key].append(value)
+    averages = {key: round(sum(values) / len(values)) for key, values in aggregated.items()}
+    avg_df = pd.DataFrame(list(averages.items()), columns=["Tag", "Average Score"])
+    avg_df.sort_values(by="Average Score", ascending=False, inplace=True)
+    avg_df.reset_index(drop=True, inplace=True)
+    return avg_df
 
 
 def main():
@@ -66,26 +93,38 @@ def main():
     parser.add_argument(
         "--candidates",
         type=int,
-        default=3,
+        default=15,
         help="Number of candidates.",
     )
 
     args = parser.parse_args()
 
-    ballots, maximum_score = process_csv_file(
+    cand_ballots, tag_ballots, maximum_score, candidate_tags = process_csv_file(
         args.csv_file_path, args.name_column, args.target_metric_column, args.tags_column
     )
 
-    results = starvote.election(
-        method=starvote.STAR_Voting
-        if args.candidates < 2
-        else starvote.Allocated_Score_Voting,
-        ballots=ballots,
+    winners = starvote.election(
+        method=starvote.STAR_Voting if args.candidates < 2 else starvote.Allocated_Score_Voting,
+        ballots=cand_ballots,
         seats=args.candidates,
         tiebreaker=starvote.hashed_ballots_tiebreaker,
         maximum_score=maximum_score,
     )
-    print(results)
+
+    avg_table = generate_avg_table(tag_ballots)
+
+    print("Winners:")
+    for winner in winners:
+        if isinstance(winner, dict):
+            # Each winner dict should have one key: the game name and its score.
+            game = list(winner.keys())[0]
+        else:
+            game = winner
+        tags = candidate_tags.get(game, ["N/A"])
+        print(f"Winner Name: {game} | Tags: {', '.join(tags)}")
+
+    print("\nAveraged Votes Table:")
+    print(avg_table)
 
 
 if __name__ == "__main__":
